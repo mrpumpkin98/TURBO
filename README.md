@@ -379,6 +379,39 @@ API 데이터 상태 관리를 위해 TanStack Query를 사용합니다.
    - 사용자 경험 개선: 이미 조회한 사진이 있으면 바로 결과 페이지로 이동
    - Zustand persist와 연동: localStorage에 저장된 데이터를 기반으로 동작
 
+#### 결과 페이지 리다이렉트
+
+사진 조회 이력 없이 `/result` 페이지로 직접 이동하는 경우, 1초 후 자동으로 메인 페이지(`/`)로 리다이렉트됩니다.
+
+1. **구현 방법**
+
+   **`app/result/page.tsx`** - 1초 지연 리다이렉트:
+
+   ```typescript
+   useEffect(() => {
+      // Wait for hydration to complete before checking data
+      if (isClient && _hasHydrated && !photoData) {
+         // 1초 후 메인 페이지로 리다이렉트
+         const timer = setTimeout(() => {
+            router.push("/");
+         }, 1000);
+
+         return () => clearTimeout(timer);
+      }
+   }, [isClient, _hasHydrated, photoData, router]);
+   ```
+
+2. **동작 방식**
+   - hydration 완료 후 `photoData`가 없으면 즉시 리다이렉트하지 않음
+   - `setTimeout`을 사용하여 1초(1000ms) 지연 후 메인 페이지로 리다이렉트
+   - cleanup 함수로 컴포넌트 unmount 시 타이머 정리
+
+3. **주요 포인트**
+   - 지연 리다이렉트: 사용자가 잘못된 경로에 접근했을 때 즉시 리다이렉트하지 않고 1초 대기
+   - 타이머 정리: cleanup 함수로 메모리 누수 방지
+   - hydration 완료 후 체크: localStorage 복원 완료 후에만 리다이렉트 실행
+   - 사용자 경험: 스켈레톤 UI를 잠깐 보여준 후 리다이렉트하여 자연스러운 전환
+
 #### 스켈레톤 UI
 
 사진 조회 페이지의 정보 영역에 로딩 상태를 표시하기 위해 스켈레톤 UI를 구현했습니다.
