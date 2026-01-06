@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@repo/ui";
@@ -17,9 +17,21 @@ const fetchPhotoData = async (): Promise<PhotoData> => {
 export default function Home() {
    const router = useRouter();
    const applicantName = "신재욱";
-   const { setPhotoData, setApplicantName } = usePhotoStore();
+   const { photoData, setPhotoData, setApplicantName, _hasHydrated } = usePhotoStore();
    const throttleRef = useRef<boolean>(false);
    const THROTTLE_DELAY = 1000; // 1초
+   const [isClient, setIsClient] = useState(false);
+
+   useEffect(() => {
+      setIsClient(true);
+   }, []);
+
+   // 사진 조회 이력이 있으면 자동으로 /result 페이지로 이동
+   useEffect(() => {
+      if (isClient && _hasHydrated && photoData) {
+         router.push("/result");
+      }
+   }, [isClient, _hasHydrated, photoData, router]);
 
    const mutation = useMutation({
       mutationFn: fetchPhotoData,

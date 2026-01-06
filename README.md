@@ -338,6 +338,47 @@ API 데이터 상태 관리를 위해 TanStack Query를 사용합니다.
    - 사용자가 실수로 여러 번 클릭해도 1초에 한 번만 실행
    - API 호출 횟수 감소로 서버 부하 감소
 
+#### 자동 리다이렉트
+
+사진을 한 번이라도 조회한 이력이 있을 경우, 홈 페이지(`/`) 접속 시 자동으로 결과 페이지(`/result`)로 이동합니다.
+
+1. **구현 방법**
+
+   **`app/page.tsx`** - 자동 리다이렉트 로직:
+
+   ```typescript
+   import { useEffect, useState } from "react";
+   import { useRouter } from "next/navigation";
+   import { usePhotoStore } from "../stores/photoStore";
+
+   const { photoData, _hasHydrated } = usePhotoStore();
+   const [isClient, setIsClient] = useState(false);
+   const router = useRouter();
+
+   useEffect(() => {
+      setIsClient(true);
+   }, []);
+
+   // 사진 조회 이력이 있으면 자동으로 /result 페이지로 이동
+   useEffect(() => {
+      if (isClient && _hasHydrated && photoData) {
+         router.push("/result");
+      }
+   }, [isClient, _hasHydrated, photoData, router]);
+   ```
+
+2. **동작 방식**
+   - 페이지 로드 시 `isClient` 상태를 `true`로 설정 (클라이언트 사이드 체크)
+   - Zustand의 `_hasHydrated`가 `true`가 될 때까지 대기 (localStorage 복원 완료)
+   - `photoData`가 존재하면 자동으로 `/result` 페이지로 리다이렉트
+   - `photoData`가 없으면 기존처럼 홈 화면 표시
+
+3. **주요 포인트**
+   - `isClient` 체크: 서버 사이드 렌더링 시 리다이렉트 방지
+   - `_hasHydrated` 체크: localStorage 복원 완료 후에만 리다이렉트 실행
+   - 사용자 경험 개선: 이미 조회한 사진이 있으면 바로 결과 페이지로 이동
+   - Zustand persist와 연동: localStorage에 저장된 데이터를 기반으로 동작
+
 ### Storybook (`apps/storybook`)
 
 UI 컴포넌트의 스토리북입니다.
