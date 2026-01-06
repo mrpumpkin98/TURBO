@@ -1,31 +1,45 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
 import { Button } from "@repo/ui";
+
+interface PhotoData {
+   id: string;
+   author: string;
+   width: number;
+   height: number;
+   url: string;
+   download_url: string;
+}
+
+const fetchPhotoData = async (): Promise<PhotoData> => {
+   const response = await fetch("https://picsum.photos/id/0/info");
+   if (!response.ok) {
+      throw new Error("Failed to fetch photo data");
+   }
+   return response.json();
+};
 
 export default function Home() {
    const router = useRouter();
-   const [isLoading, setIsLoading] = useState(false);
    const applicantName = "신재욱";
 
-   const handleNext = async () => {
-      setIsLoading(true);
-      try {
-         const response = await fetch("https://picsum.photos/id/0/info");
-         const data = await response.json();
-
-         // Store data in sessionStorage to pass to result page
+   const mutation = useMutation({
+      mutationFn: fetchPhotoData,
+      onSuccess: (data) => {
          sessionStorage.setItem("photoData", JSON.stringify(data));
          sessionStorage.setItem("applicantName", applicantName);
-
          router.push("/result");
-      } catch (error) {
+      },
+      onError: (error) => {
          console.error("Error fetching photo:", error);
          alert("사진을 불러오는 중 오류가 발생했습니다.");
-      } finally {
-         setIsLoading(false);
-      }
+      },
+   });
+
+   const handleNext = () => {
+      mutation.mutate();
    };
 
    return (
@@ -42,7 +56,7 @@ export default function Home() {
                <Button
                   variant="primary"
                   size="md"
-                  isLoading={isLoading}
+                  isLoading={mutation.isPending}
                   onClick={handleNext}
                   className="w-full"
                >

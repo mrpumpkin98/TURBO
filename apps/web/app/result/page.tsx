@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@repo/ui";
 
 interface PhotoData {
@@ -13,39 +14,49 @@ interface PhotoData {
    download_url: string;
 }
 
+const getPhotoDataFromStorage = (): PhotoData | null => {
+   if (typeof window === "undefined") return null;
+   const storedData = sessionStorage.getItem("photoData");
+   if (!storedData) return null;
+   try {
+      return JSON.parse(storedData);
+   } catch {
+      return null;
+   }
+};
+
+const getApplicantNameFromStorage = (): string => {
+   if (typeof window === "undefined") return "";
+   return sessionStorage.getItem("applicantName") || "";
+};
+
 export default function ResultPage() {
    const router = useRouter();
-   const [photoData, setPhotoData] = useState<PhotoData | null>(null);
-   const [applicantName, setApplicantName] = useState("");
+
+   const { data: photoData, isLoading: isLoadingPhoto } = useQuery<PhotoData | null>({
+      queryKey: ["photoData"],
+      queryFn: getPhotoDataFromStorage,
+      enabled: typeof window !== "undefined",
+   });
+
+   const { data: applicantName } = useQuery<string>({
+      queryKey: ["applicantName"],
+      queryFn: getApplicantNameFromStorage,
+      enabled: typeof window !== "undefined",
+   });
 
    useEffect(() => {
-      // Get data from sessionStorage
-      const storedData = sessionStorage.getItem("photoData");
-      const storedName = sessionStorage.getItem("applicantName");
-
-      if (storedName) {
-         setApplicantName(storedName);
-      }
-
-      if (storedData) {
-         try {
-            const data = JSON.parse(storedData);
-            setPhotoData(data);
-         } catch (error) {
-            console.error("Error parsing photo data:", error);
-            router.push("/");
-         }
-      } else {
-         // If no data, redirect to home
+      // Only redirect after query has finished loading and no data exists
+      if (!isLoadingPhoto && !photoData) {
          router.push("/");
       }
-   }, [router]);
+   }, [isLoadingPhoto, photoData, router]);
 
    const handleGoBack = () => {
       router.push("/");
    };
 
-   if (!photoData) {
+   if (isLoadingPhoto || !photoData) {
       return (
          <main className="min-h-screen flex items-center justify-center bg-gray-100">
             <div className="text-center">
