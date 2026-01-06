@@ -34,17 +34,23 @@ export default function ResultPage() {
    const isLoading = !isClient || !_hasHydrated || !photoData;
 
    return (
-      <main className="min-h-screen relative flex items-center justify-center py-24 md:py-20 lg:py-0">
+      <main className="min-h-screen relative flex items-center justify-center py-24 md:py-20 lg:py-0 overflow-hidden">
          {/* Background Image */}
-         <div
-            className="absolute inset-0 z-0"
-            style={{
-               backgroundImage: "url('/images/Masklayer.svg')",
-               backgroundSize: "cover",
-               backgroundPosition: "center",
-               backgroundRepeat: "no-repeat",
-            }}
-         />
+         {!isLoading && photoData && (
+            <div
+               className="absolute inset-0 z-0"
+               style={{
+                  backgroundImage: `url(${photoData.download_url})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  backgroundRepeat: "no-repeat",
+                  filter: "blur(8px)",
+               }}
+            >
+               {/* Overlay for better readability */}
+               <div className="absolute inset-0 bg-white/60" />
+            </div>
+         )}
 
          {/* Content */}
          <div className="relative z-10 w-full px-4">
