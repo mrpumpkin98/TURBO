@@ -520,6 +520,39 @@ API 데이터 상태 관리를 위해 TanStack Query를 사용합니다.
    - 성능 최적화: 로딩 중에는 배경을 표시하지 않아 불필요한 렌더링 방지
    - 반응형 디자인: `backgroundSize: cover`로 다양한 화면 크기에 대응
 
+#### 404 페이지
+
+존재하지 않는 route에 접근할 때 표시되는 404 페이지를 구현했습니다.
+
+1. **구현 방법**
+
+   **`app/not-found.tsx`** - 404 페이지:
+
+   ```typescript
+   export default function NotFound() {
+      return (
+         <main className="min-h-screen flex flex-col items-center justify-center bg-white">
+            <div className="text-center">
+               <h1 className="text-6xl font-bold text-black mb-4">404</h1>
+               <h2 className="text-2xl font-semibold text-black mb-2">페이지를 찾을 수 없습니다</h2>
+               <p className="text-gray-600 mb-8">요청하신 페이지가 존재하지 않습니다.</p>
+            </div>
+         </main>
+      );
+   }
+   ```
+
+2. **동작 방식**
+   - Next.js App Router에서 `not-found.tsx` 파일은 특별한 파일로 인식됩니다
+   - 존재하지 않는 route에 접근하면 자동으로 이 페이지가 표시됩니다
+   - 서버 컴포넌트로 구현되어 성능 최적화
+
+3. **주요 포인트**
+   - 자동 인식: Next.js가 `not-found.tsx` 파일을 자동으로 404 페이지로 인식
+   - 서버 컴포넌트: 클라이언트 컴포넌트가 아닌 서버 컴포넌트로 구현
+   - 사용자 친화적: 명확한 에러 메시지로 사용자에게 상황을 알림
+   - 간단한 디자인: 깔끔한 레이아웃으로 사용자 경험 향상
+
 ### Storybook (`apps/storybook`)
 
 UI 컴포넌트의 스토리북입니다.
