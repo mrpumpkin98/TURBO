@@ -2,61 +2,25 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
 import { Button } from "@repo/ui";
-
-interface PhotoData {
-   id: string;
-   author: string;
-   width: number;
-   height: number;
-   url: string;
-   download_url: string;
-}
-
-const getPhotoDataFromStorage = (): PhotoData | null => {
-   if (typeof window === "undefined") return null;
-   const storedData = sessionStorage.getItem("photoData");
-   if (!storedData) return null;
-   try {
-      return JSON.parse(storedData);
-   } catch {
-      return null;
-   }
-};
-
-const getApplicantNameFromStorage = (): string => {
-   if (typeof window === "undefined") return "";
-   return sessionStorage.getItem("applicantName") || "";
-};
+import { usePhotoStore } from "../../stores/photoStore";
 
 export default function ResultPage() {
    const router = useRouter();
-
-   const { data: photoData, isLoading: isLoadingPhoto } = useQuery<PhotoData | null>({
-      queryKey: ["photoData"],
-      queryFn: getPhotoDataFromStorage,
-      enabled: typeof window !== "undefined",
-   });
-
-   const { data: applicantName } = useQuery<string>({
-      queryKey: ["applicantName"],
-      queryFn: getApplicantNameFromStorage,
-      enabled: typeof window !== "undefined",
-   });
+   const { photoData, applicantName } = usePhotoStore();
 
    useEffect(() => {
-      // Only redirect after query has finished loading and no data exists
-      if (!isLoadingPhoto && !photoData) {
+      // Redirect if no data
+      if (!photoData) {
          router.push("/");
       }
-   }, [isLoadingPhoto, photoData, router]);
+   }, [photoData, router]);
 
    const handleGoBack = () => {
       router.push("/");
    };
 
-   if (isLoadingPhoto || !photoData) {
+   if (!photoData) {
       return (
          <main className="min-h-screen flex items-center justify-center bg-gray-100">
             <div className="text-center">

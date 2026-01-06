@@ -22,6 +22,7 @@ turborepo-project/
 - **TypeScript**: 타입 안정성
 - **Tailwind CSS**: 스타일링
 - **TanStack Query**: 서버 상태 관리 및 데이터 페칭
+- **Zustand**: 클라이언트 전역 상태 관리
 - **Storybook**: 컴포넌트 문서화 및 테스트
 - **pnpm**: 패키지 매니저
 
@@ -58,7 +59,9 @@ Next.js 기반 웹 애플리케이션입니다.
 
 - **라우트**: `/` (메인 페이지), `/result` (결과 페이지)
 - **기능**: Picsum API를 사용한 사진 조회
-- **상태 관리**: TanStack Query를 사용한 API 데이터 상태 관리
+- **상태 관리**:
+   - TanStack Query: API 데이터 페칭 및 서버 상태 관리
+   - Zustand: 클라이언트 전역 상태 관리 (사진 데이터, 지원자 이름)
 
 #### TanStack Query 설정
 
@@ -161,6 +164,87 @@ API 데이터 상태 관리를 위해 TanStack Query를 사용합니다.
    - `isPending`: Mutation의 로딩 상태
    - `isLoading`: Query의 로딩 상태
    - `enabled`: Query 실행 조건 제어 (예: 클라이언트 사이드에서만 실행)
+
+#### Zustand 전역 상태 관리
+
+사진 조회 데이터를 전역 상태로 관리하기 위해 Zustand를 사용합니다.
+
+1. **패키지 설치**
+
+   ```bash
+   pnpm --filter web add zustand
+   ```
+
+2. **Store 생성**
+
+   **`stores/photoStore.ts`** - 사진 데이터 전역 상태:
+
+   ```typescript
+   import { create } from "zustand";
+
+   export interface PhotoData {
+      id: string;
+      author: string;
+      width: number;
+      height: number;
+      url: string;
+      download_url: string;
+   }
+
+   interface PhotoStore {
+      photoData: PhotoData | null;
+      applicantName: string;
+      setPhotoData: (data: PhotoData) => void;
+      setApplicantName: (name: string) => void;
+      clearData: () => void;
+   }
+
+   export const usePhotoStore = create<PhotoStore>((set) => ({
+      photoData: null,
+      applicantName: "",
+      setPhotoData: (data) => set({ photoData: data }),
+      setApplicantName: (name) => set({ applicantName: name }),
+      clearData: () => set({ photoData: null, applicantName: "" }),
+   }));
+   ```
+
+3. **사용 예시**
+
+   **상태 저장 (Mutation 성공 시)**:
+
+   ```typescript
+   import { usePhotoStore } from "../stores/photoStore";
+
+   const { setPhotoData, setApplicantName } = usePhotoStore();
+
+   const mutation = useMutation({
+      mutationFn: fetchPhotoData,
+      onSuccess: (data) => {
+         setPhotoData(data);
+         setApplicantName("신재욱");
+         router.push("/result");
+      },
+   });
+   ```
+
+   **상태 읽기**:
+
+   ```typescript
+   import { usePhotoStore } from "../stores/photoStore";
+
+   const { photoData, applicantName } = usePhotoStore();
+
+   if (!photoData) {
+     return <div>로딩 중...</div>;
+   }
+   ```
+
+4. **주요 포인트**
+   - 간단한 API: `create` 함수로 store 생성
+   - 타입 안정성: TypeScript 인터페이스로 타입 보장
+   - 컴포넌트 간 상태 공유: 어디서든 `usePhotoStore` 훅으로 접근
+   - 불필요한 리렌더링 방지: 필요한 상태만 선택적으로 구독 가능
+   - sessionStorage 대체: 전역 상태로 데이터 관리하여 더 깔끔한 코드
 
 ### Storybook (`apps/storybook`)
 
