@@ -379,6 +379,74 @@ API 데이터 상태 관리를 위해 TanStack Query를 사용합니다.
    - 사용자 경험 개선: 이미 조회한 사진이 있으면 바로 결과 페이지로 이동
    - Zustand persist와 연동: localStorage에 저장된 데이터를 기반으로 동작
 
+#### 스켈레톤 UI
+
+사진 조회 페이지의 정보 영역에 로딩 상태를 표시하기 위해 스켈레톤 UI를 구현했습니다.
+
+1. **스켈레톤 컴포넌트 생성**
+
+   **`components/ResultSkeleton.tsx`** - 결과 페이지 스켈레톤:
+
+   ```typescript
+   export function ResultSkeleton() {
+      return (
+         <>
+            {/* Left Panel - Image Skeleton */}
+            <div className="">
+               <div className="w-full h-[400px] bg-gray-200 rounded-3xl animate-pulse" />
+            </div>
+
+            {/* Right Panel - Metadata Skeleton */}
+            <div className="space-y-4 flex flex-col justify-center">
+               {/* Metadata Container 1 Skeleton: id, author */}
+               <div className="bg-white rounded-2xl shadow-lg p-6">
+                  <div className="grid grid-cols-2 gap-6">
+                     <div className="flex flex-col">
+                        <div className="h-4 w-8 bg-gray-200 rounded mb-2 animate-pulse" />
+                        <div className="h-5 w-20 bg-gray-200 rounded animate-pulse" />
+                     </div>
+                     <div className="flex flex-col">
+                        <div className="h-4 w-12 bg-gray-200 rounded mb-2 animate-pulse" />
+                        <div className="h-5 w-24 bg-gray-200 rounded animate-pulse" />
+                     </div>
+                  </div>
+               </div>
+               {/* ... 더 많은 스켈레톤 요소들 ... */}
+            </div>
+         </>
+      );
+   }
+   ```
+
+2. **사용 방법**
+
+   **`app/result/page.tsx`** - 스켈레톤 컴포넌트 사용:
+
+   ```typescript
+   import { ResultSkeleton } from "../../components/ResultSkeleton";
+
+   const isLoading = !isClient || !_hasHydrated || !photoData;
+
+   return (
+      <main>
+         {isLoading ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-[50px] lg:gap-[70px]">
+               <ResultSkeleton />
+            </div>
+         ) : (
+            // 실제 콘텐츠
+         )}
+      </main>
+   );
+   ```
+
+3. **주요 포인트**
+   - 별도 컴포넌트로 분리: 재사용성 및 유지보수성 향상
+   - 실제 콘텐츠와 동일한 레이아웃: 자연스러운 전환 효과
+   - Tailwind의 `animate-pulse`: 펄스 애니메이션으로 로딩 상태 표시
+   - 이미지 및 메타데이터 영역 모두 스켈레톤 처리: 일관된 로딩 경험
+   - hydration 완료 전까지 스켈레톤 표시: 사용자에게 로딩 상태 명확히 전달
+
 ### Storybook (`apps/storybook`)
 
 UI 컴포넌트의 스토리북입니다.
