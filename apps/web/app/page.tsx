@@ -3,15 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@repo/ui";
-
-interface PhotoData {
-   id: string;
-   author: string;
-   width: number;
-   height: number;
-   url: string;
-   download_url: string;
-}
+import { usePhotoStore, type PhotoData } from "../stores/photoStore";
 
 const fetchPhotoData = async (): Promise<PhotoData> => {
    const response = await fetch("https://picsum.photos/id/0/info");
@@ -24,12 +16,13 @@ const fetchPhotoData = async (): Promise<PhotoData> => {
 export default function Home() {
    const router = useRouter();
    const applicantName = "신재욱";
+   const { setPhotoData, setApplicantName } = usePhotoStore();
 
    const mutation = useMutation({
       mutationFn: fetchPhotoData,
       onSuccess: (data) => {
-         sessionStorage.setItem("photoData", JSON.stringify(data));
-         sessionStorage.setItem("applicantName", applicantName);
+         setPhotoData(data);
+         setApplicantName(applicantName);
          router.push("/result");
       },
       onError: (error) => {
