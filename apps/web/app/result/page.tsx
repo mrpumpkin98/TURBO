@@ -90,11 +90,15 @@ export default function ResultPage() {
                         <div className="grid grid-cols-2 gap-6">
                            <div className="flex flex-col">
                               <span className="text-black font-medium mb-1">width</span>
-                              <span className="text-black opacity-50">{photoData.width.toLocaleString()}</span>
+                              <span className="text-black opacity-50">
+                                 {photoData.width.toLocaleString()}
+                              </span>
                            </div>
                            <div className="flex flex-col">
                               <span className="text-black font-medium mb-1">height</span>
-                              <span className="text-black opacity-50">{photoData.height.toLocaleString()}</span>
+                              <span className="text-black opacity-50">
+                                 {photoData.height.toLocaleString()}
+                              </span>
                            </div>
                         </div>
                      </div>

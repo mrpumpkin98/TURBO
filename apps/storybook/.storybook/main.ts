@@ -36,7 +36,10 @@ const config: StorybookConfig = {
          ...options,
          presets: [
             ...options.presets,
-            ["@babel/preset-typescript", { isTSX: true, allExtensions: true, onlyRemoveTypeImports: true }],
+            [
+               "@babel/preset-typescript",
+               { isTSX: true, allExtensions: true, onlyRemoveTypeImports: true },
+            ],
          ],
       };
    },
@@ -65,4 +68,3 @@ const config: StorybookConfig = {
 };
 
 export default config;
-

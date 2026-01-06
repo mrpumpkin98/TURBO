@@ -31,22 +31,26 @@ git push -u origin main
 ### 방법 1: Vercel CLI 사용
 
 1. Vercel CLI 설치:
+
 ```bash
 npm i -g vercel
 ```
 
 2. 로그인:
+
 ```bash
 vercel login
 ```
 
 3. 프로젝트 배포:
+
 ```bash
 cd /Users/shinjaewook/Desktop/Project/Side/turborepo-project
 vercel
 ```
 
 배포 시 다음 설정을 사용하세요:
+
 - **Root Directory**: `apps/web`
 - **Build Command**: `cd ../.. && pnpm build --filter web`
 - **Install Command**: `pnpm install`
@@ -77,4 +81,3 @@ vercel
 1. 메인 페이지 (`/`)에서 "사진 조회하기" 버튼이 표시되는지
 2. 버튼 클릭 시 API 호출이 정상적으로 작동하는지
 3. `/result` 페이지로 이동하여 사진 정보가 표시되는지
-
