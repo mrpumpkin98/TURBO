@@ -298,6 +298,46 @@ API 데이터 상태 관리를 위해 TanStack Query를 사용합니다.
    - 데이터 영속화: `persist` 미들웨어로 새로고침 후에도 데이터 유지
    - Hydration 처리: `_hasHydrated` 상태로 초기 로딩 시점의 문제 방지
 
+#### 버튼 클릭 스로틀링
+
+사진 조회 버튼 클릭 시 중복 클릭을 방지하기 위해 스로틀링을 적용했습니다.
+
+1. **구현 방법**
+
+   **`app/page.tsx`** - 스로틀링 적용:
+
+   ```typescript
+   import { useRef } from "react";
+
+   const throttleRef = useRef<boolean>(false);
+   const THROTTLE_DELAY = 1000; // 1초
+
+   const handleNext = () => {
+      // 로딩 중이거나 스로틀링 중이면 클릭 무시
+      if (mutation.isPending || throttleRef.current) {
+         return;
+      }
+
+      throttleRef.current = true;
+      mutation.mutate();
+
+      setTimeout(() => {
+         throttleRef.current = false;
+      }, THROTTLE_DELAY);
+   };
+   ```
+
+2. **동작 방식**
+   - 버튼 클릭 시 `mutation.isPending` 또는 `throttleRef.current`가 `true`이면 클릭 무시
+   - 클릭 가능한 경우 mutation 실행 후 1초 동안 스로틀링 상태 유지
+   - 1초 후 다시 클릭 가능
+
+3. **주요 포인트**
+   - `useRef`를 사용하여 컴포넌트 리렌더링 없이 스로틀링 상태 관리
+   - `mutation.isPending`과 함께 체크하여 로딩 중 중복 클릭 방지
+   - 사용자가 실수로 여러 번 클릭해도 1초에 한 번만 실행
+   - API 호출 횟수 감소로 서버 부하 감소
+
 ### Storybook (`apps/storybook`)
 
 UI 컴포넌트의 스토리북입니다.
