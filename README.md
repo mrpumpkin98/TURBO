@@ -51,6 +51,109 @@ pnpm --filter storybook storybook
 pnpm build
 ```
 
+### 코드 포맷팅 및 린팅
+
+```bash
+# 모든 워크스페이스 포맷팅
+pnpm format
+
+# 특정 워크스페이스만 포맷팅
+pnpm --filter web format
+
+# 포맷팅 체크 (변경하지 않고 확인만)
+pnpm format:check
+
+# 모든 워크스페이스 린팅
+pnpm lint
+
+# 특정 워크스페이스만 린팅
+pnpm --filter web lint
+```
+
+## 코드 관리
+
+### ESLint & Prettier
+
+프로젝트는 ESLint와 Prettier를 사용하여 코드 스타일을 일관되게 관리합니다.
+
+1. **Prettier 설정**
+
+   **`.prettierrc`** - Prettier 설정:
+
+   ```json
+   {
+      "semi": true,
+      "trailingComma": "es5",
+      "singleQuote": false,
+      "printWidth": 100,
+      "tabWidth": 3,
+      "useTabs": false,
+      "arrowParens": "always",
+      "endOfLine": "lf"
+   }
+   ```
+
+   **`.prettierignore`** - 포맷팅 제외 파일:
+
+   ```
+   node_modules
+   .next
+   .turbo
+   dist
+   build
+   coverage
+   *.lock
+   ```
+
+2. **ESLint 설정**
+
+   **`apps/web/.eslintrc.json`** - Next.js 웹 앱 ESLint 설정:
+
+   ```json
+   {
+      "extends": "next/core-web-vitals"
+   }
+   ```
+
+   **`packages/ui/.eslintrc.json`** - UI 패키지 ESLint 설정:
+
+   ```json
+   {
+      "extends": [
+         "eslint:recommended",
+         "plugin:@typescript-eslint/recommended",
+         "plugin:react/recommended",
+         "plugin:react-hooks/recommended"
+      ],
+      "parser": "@typescript-eslint/parser",
+      "plugins": ["@typescript-eslint", "react", "react-hooks"],
+      "rules": {
+         "react/react-in-jsx-scope": "off",
+         "react/prop-types": "off"
+      }
+   }
+   ```
+
+3. **Turbo 설정**
+
+   **`turbo.json`** - format 파이프라인:
+
+   ```json
+   {
+      "tasks": {
+         "format": {
+            "cache": false
+         }
+      }
+   }
+   ```
+
+4. **주요 포인트**
+   - 자동 포맷팅: `pnpm format`으로 모든 워크스페이스 코드 자동 포맷팅
+   - 린팅: `pnpm lint`로 코드 품질 검사
+   - 일관된 스타일: Prettier로 프로젝트 전체 코드 스타일 통일
+   - CI/CD 통합: 포맷팅 체크를 CI 파이프라인에 추가 가능
+
 ## 워크스페이스
 
 ### Web (`apps/web`)

@@ -20,7 +20,8 @@ export const Button: React.FC<ButtonProps> = ({
       "inline-flex items-center justify-center font-medium rounded-[12px] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px]";
 
    const variantStyles = {
-      primary: "bg-[#111111] text-white hover:bg-[#111111]/80 focus:ring-gray-500 active:bg-[#111111]/70",
+      primary:
+         "bg-[#111111] text-white hover:bg-[#111111]/80 focus:ring-gray-500 active:bg-[#111111]/70",
       secondary: "bg-gray-500 text-white hover:bg-gray-600 focus:ring-gray-400 active:bg-gray-700",
    };
 
@@ -33,11 +34,7 @@ export const Button: React.FC<ButtonProps> = ({
    const combinedClassName = `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`;
 
    return (
-      <button
-         className={combinedClassName}
-         disabled={disabled || isLoading}
-         {...props}
-      >
+      <button className={combinedClassName} disabled={disabled || isLoading} {...props}>
          {isLoading ? (
             <div className="flex items-center gap-1.5">
                <svg

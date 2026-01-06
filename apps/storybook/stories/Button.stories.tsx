@@ -76,22 +76,13 @@ export const Disabled = {
 export const AllSizes = {
    render: () => (
       <div className="flex gap-4 items-center">
-         <Button
-            variant="primary"
-            size="sm"
-         >
+         <Button variant="primary" size="sm">
             Small
          </Button>
-         <Button
-            variant="primary"
-            size="md"
-         >
+         <Button variant="primary" size="md">
             Medium
          </Button>
-         <Button
-            variant="primary"
-            size="lg"
-         >
+         <Button variant="primary" size="lg">
             Large
          </Button>
       </div>
