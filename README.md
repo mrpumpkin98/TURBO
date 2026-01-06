@@ -656,6 +656,125 @@ API 데이터 상태 관리를 위해 TanStack Query를 사용합니다.
    - 사용자 친화적: 명확한 에러 메시지로 사용자에게 상황을 알림
    - 간단한 디자인: 깔끔한 레이아웃으로 사용자 경험 향상
 
+#### 컴포넌트 구조
+
+프로젝트는 페이지별로 컴포넌트를 모듈화하여 재사용성과 유지보수성을 높였습니다.
+
+1. **컴포넌트 디렉토리 구조**
+
+   ```
+   apps/web/components/
+   ├── home/              # 홈 페이지 컴포넌트
+   │   ├── hooks/         # 홈 페이지 전용 훅
+   │   │   ├── useClientSide.ts
+   │   │   ├── useAutoRedirect.ts
+   │   │   ├── useThrottle.ts
+   │   │   └── usePhotoMutation.ts
+   │   └── index.tsx
+   ├── result/            # 결과 페이지 컴포넌트
+   │   ├── hooks/         # 결과 페이지 전용 훅
+   │   │   ├── useClientSide.ts
+   │   │   ├── useConditionalRedirect.ts
+   │   │   ├── useNavigation.ts
+   │   │   └── usePhotoData.ts
+   │   ├── ui/            # 결과 페이지 UI 컴포넌트
+   │   │   ├── BackgroundImage.tsx
+   │   │   ├── PhotoImage.tsx
+   │   │   ├── MetadataField.tsx
+   │   │   ├── MetadataContainer.tsx
+   │   │   ├── PhotoMetadata.tsx
+   │   │   ├── ResultContent.tsx
+   │   │   ├── ResultSkeleton.tsx
+   │   │   └── BackButton.tsx
+   │   └── index.tsx
+   └── 404/               # 404 페이지 컴포넌트
+       └── index.tsx
+   ```
+
+2. **커스텀 훅**
+
+   **홈 페이지 훅 (`components/home/hooks`)**:
+   - **`useClientSide`**: 클라이언트 사이드 체크
+   - **`useAutoRedirect`**: 조건부 자동 리다이렉트
+   - **`useThrottle`**: 함수 호출 스로틀링
+   - **`usePhotoMutation`**: 사진 데이터 mutation 관리
+
+   **결과 페이지 훅 (`components/result/hooks`)**:
+   - **`useClientSide`**: 클라이언트 사이드 체크
+   - **`useConditionalRedirect`**: 조건부 리다이렉트 (지연 시간 포함)
+   - **`useNavigation`**: 네비게이션 유틸리티 (goTo, goBack, goHome)
+   - **`usePhotoData`**: 사진 데이터 및 로딩 상태 관리
+
+3. **UI 컴포넌트**
+
+   **재사용 가능한 UI 컴포넌트 (`components/result/ui`)**:
+   - **`BackgroundImage`**: 배경 이미지 컴포넌트 (blur, overlay 옵션)
+   - **`PhotoImage`**: 사진 이미지 컴포넌트
+   - **`MetadataField`**: 개별 메타데이터 필드 (텍스트/링크 지원)
+   - **`MetadataContainer`**: 메타데이터 컨테이너 (컬럼 수 조정 가능)
+   - **`PhotoMetadata`**: 전체 메타데이터 섹션
+   - **`ResultContent`**: 결과 페이지 메인 콘텐츠
+   - **`ResultSkeleton`**: 로딩 스켈레톤 UI
+   - **`BackButton`**: 뒤로가기 버튼
+
+4. **사용 예시**
+
+   **홈 페이지 컴포넌트**:
+
+   ```typescript
+   import { useClientSide } from "./hooks/useClientSide";
+   import { useAutoRedirect } from "./hooks/useAutoRedirect";
+   import { useThrottle } from "./hooks/useThrottle";
+   import { usePhotoMutation } from "./hooks/usePhotoMutation";
+
+   export default function Home() {
+      const isClient = useClientSide();
+      const { throttledFn } = useThrottle({ delay: 1000 });
+      const mutation = usePhotoMutation({ applicantName: "신재욱" });
+
+      useAutoRedirect({
+         condition: isClient && _hasHydrated && !!photoData,
+         redirectPath: "/result",
+      });
+
+      const handleNext = () => {
+         if (mutation.isPending) return;
+         throttledFn(() => mutation.mutate());
+      };
+
+      // ...
+   }
+   ```
+
+   **결과 페이지 컴포넌트**:
+
+   ```typescript
+   import { usePhotoData } from "./hooks/usePhotoData";
+   import { useConditionalRedirect } from "./hooks/useConditionalRedirect";
+   import { useNavigation } from "./hooks/useNavigation";
+
+   export default function Result() {
+      const { photoData, isLoading } = usePhotoData();
+      const { goHome } = useNavigation();
+
+      useConditionalRedirect({
+         condition: isClient && _hasHydrated && !photoData,
+         redirectPath: "/",
+         delay: 1000,
+      });
+
+      // ...
+   }
+   ```
+
+5. **주요 포인트**
+   - **모듈화**: 페이지별로 컴포넌트와 훅을 분리하여 관리
+   - **재사용성**: UI 컴포넌트와 훅을 다른 곳에서도 사용 가능
+   - **관심사 분리**: 각 기능을 독립적인 모듈로 분리
+   - **유지보수성**: 각 모듈을 독립적으로 수정 가능
+   - **테스트 용이성**: 각 컴포넌트와 훅을 개별적으로 테스트 가능
+   - **타입 안정성**: TypeScript로 모든 컴포넌트와 훅의 타입 보장
+
 ### Storybook (`apps/storybook`)
 
 UI 컴포넌트의 스토리북입니다.
