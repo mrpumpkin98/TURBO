@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@repo/ui";
@@ -17,6 +18,8 @@ export default function Home() {
    const router = useRouter();
    const applicantName = "신재욱";
    const { setPhotoData, setApplicantName } = usePhotoStore();
+   const throttleRef = useRef<boolean>(false);
+   const THROTTLE_DELAY = 1000; // 1초
 
    const mutation = useMutation({
       mutationFn: fetchPhotoData,
@@ -32,7 +35,17 @@ export default function Home() {
    });
 
    const handleNext = () => {
+      // 로딩 중이거나 스로틀링 중이면 클릭 무시
+      if (mutation.isPending || throttleRef.current) {
+         return;
+      }
+
+      throttleRef.current = true;
       mutation.mutate();
+
+      setTimeout(() => {
+         throttleRef.current = false;
+      }, THROTTLE_DELAY);
    };
 
    return (
