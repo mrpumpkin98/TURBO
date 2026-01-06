@@ -175,12 +175,13 @@ API 데이터 상태 관리를 위해 TanStack Query를 사용합니다.
    pnpm --filter web add zustand
    ```
 
-2. **Store 생성**
+2. **Store 생성 (Persist 미들웨어 포함)**
 
-   **`stores/photoStore.ts`** - 사진 데이터 전역 상태:
+   **`stores/photoStore.ts`** - 사진 데이터 전역 상태 (localStorage 영속화):
 
    ```typescript
    import { create } from "zustand";
+   import { persist, createJSONStorage } from "zustand/middleware";
 
    export interface PhotoData {
       id: string;
@@ -194,19 +195,43 @@ API 데이터 상태 관리를 위해 TanStack Query를 사용합니다.
    interface PhotoStore {
       photoData: PhotoData | null;
       applicantName: string;
+      _hasHydrated: boolean;
       setPhotoData: (data: PhotoData) => void;
       setApplicantName: (name: string) => void;
       clearData: () => void;
+      setHasHydrated: (state: boolean) => void;
    }
 
-   export const usePhotoStore = create<PhotoStore>((set) => ({
-      photoData: null,
-      applicantName: "",
-      setPhotoData: (data) => set({ photoData: data }),
-      setApplicantName: (name) => set({ applicantName: name }),
-      clearData: () => set({ photoData: null, applicantName: "" }),
-   }));
+   export const usePhotoStore = create<PhotoStore>()(
+      persist(
+         (set) => ({
+            photoData: null,
+            applicantName: "",
+            _hasHydrated: false,
+            setPhotoData: (data) => set({ photoData: data }),
+            setApplicantName: (name) => set({ applicantName: name }),
+            clearData: () => set({ photoData: null, applicantName: "" }),
+            setHasHydrated: (state) => {
+               set({
+                  _hasHydrated: state,
+               });
+            },
+         }),
+         {
+            name: "photo-storage", // localStorage key
+            storage: createJSONStorage(() => localStorage),
+            onRehydrateStorage: () => (state) => {
+               state?.setHasHydrated(true);
+            },
+         }
+      )
+   );
    ```
+
+   **주요 설정**:
+   - `persist` 미들웨어: localStorage에 자동 저장/복원
+   - `_hasHydrated`: hydration 완료 상태 추적
+   - `onRehydrateStorage`: localStorage에서 데이터 복원 완료 시 호출
 
 3. **사용 예시**
 
@@ -227,24 +252,51 @@ API 데이터 상태 관리를 위해 TanStack Query를 사용합니다.
    });
    ```
 
-   **상태 읽기**:
+   **상태 읽기 (Hydration 처리 포함)**:
 
    ```typescript
+   import { useEffect, useState } from "react";
    import { usePhotoStore } from "../stores/photoStore";
 
-   const { photoData, applicantName } = usePhotoStore();
+   const { photoData, applicantName, _hasHydrated } = usePhotoStore();
+   const [isClient, setIsClient] = useState(false);
+
+   useEffect(() => {
+      setIsClient(true);
+   }, []);
+
+   // Hydration 완료 전에는 로딩 표시
+   if (!isClient || !_hasHydrated) {
+      return <div>로딩 중...</div>;
+   }
 
    if (!photoData) {
-     return <div>로딩 중...</div>;
+      return <div>데이터가 없습니다.</div>;
    }
    ```
 
-4. **주요 포인트**
+4. **Persist 미들웨어 (데이터 영속화)**
+
+   Zustand의 `persist` 미들웨어를 사용하여 새로고침 시에도 데이터가 유지됩니다.
+
+   **주요 기능**:
+   - `localStorage`에 자동 저장: 페이지 새로고침 후에도 데이터 유지
+   - `onRehydrateStorage`: localStorage에서 데이터 복원 완료 시 콜백 실행
+   - `_hasHydrated` 상태: hydration 완료 여부를 추적하여 초기 렌더링 시 데이터가 아직 로드되지 않았을 때의 문제 방지
+
+   **Hydration 처리**:
+   - `persist`는 비동기적으로 localStorage에서 데이터를 로드합니다
+   - 초기 렌더링 시점에는 아직 데이터가 로드되지 않아 `photoData`가 `null`일 수 있습니다
+   - `_hasHydrated` 상태를 확인하여 hydration이 완료된 후에만 데이터를 체크해야 합니다
+   - 이를 통해 새로고침 시 데이터가 유지되면서도 잘못된 리다이렉트를 방지할 수 있습니다
+
+5. **주요 포인트**
    - 간단한 API: `create` 함수로 store 생성
    - 타입 안정성: TypeScript 인터페이스로 타입 보장
    - 컴포넌트 간 상태 공유: 어디서든 `usePhotoStore` 훅으로 접근
    - 불필요한 리렌더링 방지: 필요한 상태만 선택적으로 구독 가능
-   - sessionStorage 대체: 전역 상태로 데이터 관리하여 더 깔끔한 코드
+   - 데이터 영속화: `persist` 미들웨어로 새로고침 후에도 데이터 유지
+   - Hydration 처리: `_hasHydrated` 상태로 초기 로딩 시점의 문제 방지
 
 ### Storybook (`apps/storybook`)
 

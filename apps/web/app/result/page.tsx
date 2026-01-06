@@ -1,24 +1,40 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@repo/ui";
 import { usePhotoStore } from "../../stores/photoStore";
 
 export default function ResultPage() {
    const router = useRouter();
-   const { photoData, applicantName } = usePhotoStore();
+   const { photoData, applicantName, _hasHydrated } = usePhotoStore();
+   const [isClient, setIsClient] = useState(false);
 
    useEffect(() => {
-      // Redirect if no data
-      if (!photoData) {
+      setIsClient(true);
+   }, []);
+
+   useEffect(() => {
+      // Wait for hydration to complete before checking data
+      if (isClient && _hasHydrated && !photoData) {
          router.push("/");
       }
-   }, [photoData, router]);
+   }, [isClient, _hasHydrated, photoData, router]);
 
    const handleGoBack = () => {
       router.push("/");
    };
+
+   // Wait for hydration to complete
+   if (!isClient || !_hasHydrated) {
+      return (
+         <main className="min-h-screen flex items-center justify-center bg-gray-100">
+            <div className="text-center">
+               <p className="text-gray-600">로딩 중...</p>
+            </div>
+         </main>
+      );
+   }
 
    if (!photoData) {
       return (
