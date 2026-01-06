@@ -480,6 +480,46 @@ API 데이터 상태 관리를 위해 TanStack Query를 사용합니다.
    - 이미지 및 메타데이터 영역 모두 스켈레톤 처리: 일관된 로딩 경험
    - hydration 완료 전까지 스켈레톤 표시: 사용자에게 로딩 상태 명확히 전달
 
+#### 배경 이미지
+
+사진 조회 페이지의 배경은 조회한 사진을 사용하여 동적으로 생성됩니다.
+
+1. **구현 방법**
+
+   **`app/result/page.tsx`** - 조회한 사진을 배경으로 사용:
+
+   ```typescript
+   {!isLoading && photoData && (
+      <div
+         className="absolute inset-0 z-0"
+         style={{
+            backgroundImage: `url(${photoData.download_url})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+            filter: "blur(8px)",
+         }}
+      >
+         {/* Overlay for better readability */}
+         <div className="absolute inset-0 bg-white/60" />
+      </div>
+   )}
+   ```
+
+2. **동작 방식**
+   - 로딩이 완료되고 `photoData`가 있을 때만 배경 이미지 표시
+   - 조회한 사진(`photoData.download_url`)을 배경으로 사용
+   - `filter: blur(8px)`로 배경 이미지를 뿌옇게 처리
+   - 흰색 오버레이(`bg-white/60`)로 콘텐츠 가독성 향상
+   - `overflow-hidden`으로 불필요한 스크롤 방지
+
+3. **주요 포인트**
+   - 동적 배경: 조회한 사진에 따라 배경이 자동으로 변경
+   - Blur 효과: 배경을 뿌옇게 처리하여 콘텐츠에 집중
+   - 흰색 오버레이: 텍스트와 콘텐츠의 가독성 보장
+   - 성능 최적화: 로딩 중에는 배경을 표시하지 않아 불필요한 렌더링 방지
+   - 반응형 디자인: `backgroundSize: cover`로 다양한 화면 크기에 대응
+
 ### Storybook (`apps/storybook`)
 
 UI 컴포넌트의 스토리북입니다.
