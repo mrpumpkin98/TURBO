@@ -18,7 +18,12 @@ export default function ResultPage() {
    useEffect(() => {
       // Wait for hydration to complete before checking data
       if (isClient && _hasHydrated && !photoData) {
-         router.push("/");
+         // 1초 후 메인 페이지로 리다이렉트
+         const timer = setTimeout(() => {
+            router.push("/");
+         }, 1000);
+
+         return () => clearTimeout(timer);
       }
    }, [isClient, _hasHydrated, photoData, router]);
 
